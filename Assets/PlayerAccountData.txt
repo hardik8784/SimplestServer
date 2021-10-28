@@ -1,0 +1,3 @@
+hh,bh
+bh,hh
+ff,ss

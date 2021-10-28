@@ -1,0 +1,2 @@
+H:\SimplestServer-main\SimplestServer\obj\Debug\Assembly-CSharp.csprojAssemblyReference.cache
+H:\SimplestServer-main\SimplestServer\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
