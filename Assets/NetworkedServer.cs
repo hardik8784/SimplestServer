@@ -170,22 +170,23 @@ public class NetworkedServer : MonoBehaviour
                 SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + " ", PlayerWaitingForMatch);
 
                 PlayerWaitingForMatch = -1;
+                Debug.Log("Game Session Started");
             }
         }
         else if (signifier == ClientToServerSignifiers.TicTacToePlay)
         {
-           // Debug.Log("TicTacToePlay");
+            Debug.Log("TicTacToePlay");
 
-            GameSession gs = FindGameSessionWithPlayerId(id);
+            //GameSession gs = FindGameSessionWithPlayerId(id);
 
-            if(gs.PlayerId1 == id)
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
-            }
-            else
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
-            }
+            //if(gs.PlayerId1 == id)
+            //{
+            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
+            //}
+            //else
+            //{
+            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
+            //}
         }
     }
 
