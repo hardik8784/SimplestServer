@@ -179,14 +179,14 @@ public class NetworkedServer : MonoBehaviour
 
             GameSession gs = FindGameSessionWithPlayerId(id);
 
-            if (gs.PlayerId1 == id)
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
-            }
-            else
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
-            }
+            //if (gs.PlayerId1 == id)
+            //{
+            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
+            //}
+            //else
+            //{
+            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
+            //}
         }
     }
 
