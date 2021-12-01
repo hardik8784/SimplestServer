@@ -179,14 +179,14 @@ public class NetworkedServer : MonoBehaviour
 
             GameSession gs = FindGameSessionWithPlayerId(id);
 
-            //if (gs.PlayerId1 == id)
-            //{
-            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
-            //}
-            //else
-            //{
-            //    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
-            //}
+            if (gs.PlayerId1 == id)
+            {
+                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
+            }
+            else
+            {
+                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
+            }
         }
     }
 
@@ -219,11 +219,11 @@ public class NetworkedServer : MonoBehaviour
         }
     }
 
-    private GameSession FindGameSessionWithPlayerId(int Id)
+    private GameSession FindGameSessionWithPlayerId(int id)
     {
         foreach(GameSession gs in GameSessions)
         {
-            if(gs.PlayerId1 == Id || gs.PlayerId2 == Id)
+            if(gs.PlayerId1 == id || gs.PlayerId2 == id)
             {
                 return gs;
             }
@@ -247,10 +247,10 @@ public class GameSession
 {
     public int PlayerId1, PlayerId2;
 
-    public GameSession(int PlayerId1, int PlayerId2)
+    public GameSession(int Playerid1, int Playerid2)
     {
-        PlayerId1 = PlayerId1;
-        PlayerId2 = PlayerId2;
+        PlayerId1 = Playerid1;
+        PlayerId2 = Playerid2;
     }
 }
 
