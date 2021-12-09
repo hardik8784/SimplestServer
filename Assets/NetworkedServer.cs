@@ -188,6 +188,11 @@ public class NetworkedServer : MonoBehaviour
                 SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
             }
         }
+        else if(signifier == ClientToServerSignifiers.OpponentTurn)
+        {
+
+        }
+
     }
 
     private void SavePlayerAccounts()
@@ -263,6 +268,8 @@ public static class ClientToServerSignifiers
     public const int AddToGameSessionQueue = 3;
 
     public const int TicTacToePlay = 4;
+
+    public const int OpponentTurn = 5;
 }
 
 public static class ServerToClientSignifiers
