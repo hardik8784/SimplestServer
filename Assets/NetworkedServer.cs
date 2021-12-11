@@ -22,6 +22,8 @@ public class NetworkedServer : MonoBehaviour
 
     LinkedList<GameSession> GameSessions;
 
+    int TotalTurnCount = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -96,23 +98,23 @@ public class NetworkedServer : MonoBehaviour
 
             bool isUnique = true;
 
-            foreach(PlayerAccount pa in PlayerAccounts)
+            foreach (PlayerAccount pa in PlayerAccounts)
             {
-                if(pa.name == n)
+                if (pa.name == n)
                 {
                     isUnique = false;
                     break;
                 }
             }
-            if(isUnique)
+            if (isUnique)
             {
-                PlayerAccounts.AddLast(new PlayerAccount(n,p));
+                PlayerAccounts.AddLast(new PlayerAccount(n, p));
                 //SendMessageToClient(ServerToClientSignifiers.LoginResponse + "", id);
-               SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
+                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
 
                 SavePlayerAccounts();
             }
-            else 
+            else
             {
                 SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameInUse, id);
             }
@@ -133,7 +135,7 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (pa.name == n)
                 {
-                    if(pa.password == p)
+                    if (pa.password == p)
                     {
                         SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
                     }
@@ -148,11 +150,11 @@ public class NetworkedServer : MonoBehaviour
                     break;
                 }
             }
-            if(!hasBeenFound)
+            if (!hasBeenFound)
             {
                 SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameNotFound, id);
             }
-            
+
         }
 
         #endregion
@@ -185,7 +187,7 @@ public class NetworkedServer : MonoBehaviour
         #endregion
         else if (signifier == ClientToServerSignifiers.TicTacToePlay)
         {
-            Debug.Log("TicTacToePlay");
+            //Debug.Log("TicTacToePlay");
 
             GameSession gs = FindGameSessionWithPlayerId(id);
 
@@ -197,12 +199,25 @@ public class NetworkedServer : MonoBehaviour
             {
                 SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
             }
+            //Debug.Log("OpponentTicTacToePlay");
+
         }
-        else if(signifier == ClientToServerSignifiers.OpponentTurn)
+        else if (signifier == ClientToServerSignifiers.OpponentTurn)
         {
+            Debug.Log("Let's implement this");
+            GameSession gs = FindGameSessionWithPlayerId(id);
+            TotalTurnCount++;
+            if (gs.PlayerId1 == id)
+            {
+                Debug.Log("Player1 Clicked Id : " + gs.PlayerId1);
 
+            }
+            else
+            {
+                Debug.Log("Player2 Clicked Id : " + gs.PlayerId2);
+
+            }
         }
-
     }
 
 
