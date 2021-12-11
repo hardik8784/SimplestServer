@@ -88,7 +88,8 @@ public class NetworkedServer : MonoBehaviour
 
         int signifier = int.Parse(csv[0]);
 
-        if(signifier == ClientToServerSignifiers.CreateAccount)
+        #region Check Player has existing account or not, if not, create one
+        if (signifier == ClientToServerSignifiers.CreateAccount)
         {
             string n = csv[1];
             string p = csv[2];
@@ -117,7 +118,10 @@ public class NetworkedServer : MonoBehaviour
             }
 
         }
-        else if(signifier == ClientToServerSignifiers.Login)
+        #endregion
+
+        #region If Player has already created account, see it matches with the Credentials, Do login after that
+        else if (signifier == ClientToServerSignifiers.Login)
         {
             string n = csv[1];
             string p = csv[2];
@@ -150,6 +154,10 @@ public class NetworkedServer : MonoBehaviour
             }
             
         }
+
+        #endregion
+
+        #region If both the Clients are waiting then add them to the GameRoom/GameSession
         else if (signifier == ClientToServerSignifiers.AddToGameSessionQueue)
         {
 
@@ -173,6 +181,8 @@ public class NetworkedServer : MonoBehaviour
                 Debug.Log("Player match done, Game Session Started");
             }
         }
+
+        #endregion
         else if (signifier == ClientToServerSignifiers.TicTacToePlay)
         {
             Debug.Log("TicTacToePlay");
@@ -195,6 +205,8 @@ public class NetworkedServer : MonoBehaviour
 
     }
 
+
+    #region Saving Player Account with StreamWriter
     private void SavePlayerAccounts()
     {
         StreamWriter sw = new StreamWriter(PlayerAccountFilePath);
@@ -205,6 +217,7 @@ public class NetworkedServer : MonoBehaviour
         }
         sw.Close();
     }
+    #endregion
 
     private void LoadPlayerAccounts()
     {
