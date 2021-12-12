@@ -210,7 +210,7 @@ public class NetworkedServer : MonoBehaviour
             if (gs.PlayerId1 == id)
             {
                 Debug.Log("Player1 Clicked Id : " + gs.PlayerId1);
-
+                
             }
             else
             {
