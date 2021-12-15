@@ -172,7 +172,7 @@ public class NetworkedServer : MonoBehaviour
             else
             {
                 //If there is awaiting player, Join...
-                //Create a game session object, pass it to two players
+                //Create a game session object, pass it to two Players
                 GameSession gs = new GameSession(PlayerWaitingForMatch, id);
                 GameSessions.AddLast(gs);
                 //pass a signifier to both the clients that they have joined one
@@ -191,30 +191,30 @@ public class NetworkedServer : MonoBehaviour
 
             GameSession gs = FindGameSessionWithPlayerId(id);
 
-            if (gs.PlayerId1 == id)
+            if (gs.Players[0] == id)
             {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId2);
+                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.Players[1]);
             }
             else
             {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.PlayerId1);
+                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.Players[0]);
             }
             //Debug.Log("OpponentTicTacToePlay");
 
         }
-        else if (signifier == ClientToServerSignifiers.OpponentTurn)
+        else if (signifier == ClientToServerSignifiers.PlayerAction)
         {
             Debug.Log("Let's implement this");
             GameSession gs = FindGameSessionWithPlayerId(id);
             TotalTurnCount++;
-            if (gs.PlayerId1 == id)
+            if (gs.Players[0] == id)
             {
-                Debug.Log("Player1 Clicked Id : " + gs.PlayerId1);
-                
+                Debug.Log("Player1 Clicked Id : " + gs.Players[1]);
+
             }
             else
             {
-                Debug.Log("Player2 Clicked Id : " + gs.PlayerId2);
+                Debug.Log("Player2 Clicked Id : " + gs.Players[0]);
 
             }
         }
@@ -256,7 +256,7 @@ public class NetworkedServer : MonoBehaviour
     {
         foreach(GameSession gs in GameSessions)
         {
-            if(gs.PlayerId1 == id || gs.PlayerId2 == id)
+            if(gs.Players[0] == id || gs.Players[1] == id)
             {
                 return gs;
             }
@@ -278,12 +278,18 @@ public class PlayerAccount
 
 public class GameSession
 {
-    public int PlayerId1, PlayerId2;
+    //public int PlayerId1, PlayerId2;
+    public List<int> Players;
 
     public GameSession(int Playerid1, int Playerid2)
     {
-        PlayerId1 = Playerid1;
-        PlayerId2 = Playerid2;
+        //PlayerId1 = Playerid1;
+        //PlayerId2 = Playerid2;
+        Players.Add(Playerid1);
+        Players.Add(Playerid2);
+
+        // only need to worry about these two
+        Debug.Log("Players " + Players[0] + "," + Players[1]);
     }
 }
 
@@ -297,7 +303,9 @@ public static class ClientToServerSignifiers
 
     public const int TicTacToePlay = 4;
 
-    public const int OpponentTurn = 5;
+    public const int PlayerAction = 5;
+
+    public const int SendPresetMessage = 6;
 }
 
 public static class ServerToClientSignifiers
