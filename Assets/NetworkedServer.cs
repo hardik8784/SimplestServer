@@ -37,6 +37,7 @@ public class NetworkedServer : MonoBehaviour
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
 
         ticTacToeServerBoard = new int[3, 3];
+        ResetServerBoard();
 
         PlayerAccounts = new LinkedList<PlayerAccount>();
         
@@ -291,8 +292,39 @@ public class NetworkedServer : MonoBehaviour
               
             }
         }
+        else if (signifier == ClientToServerSignifiers.ResetGame)
+        {
+            GameSession gs = GetGameRoomWithClientID(id);
+            if (gs != null)
+            {
+                ResetServerBoard();
+                if (gs.Players[0] == id)
+                {
+                    Debug.Log("Resetting TicTacToeBoard for Player2");
+                    SendMessageToClient(ServerToClientSignifiers.GameReset + "", gs.Players[1]);
+                }
+                else
+                {
+                    Debug.Log("Resetting TicTacToeBoard for Player2");
+                    SendMessageToClient(ServerToClientSignifiers.GameReset + "", gs.Players[0]);
+                }
+
+               
+
+            }
+        }
     }
 
+    private void ResetServerBoard()
+    {
+        for (int i = 0; i < ticTacToeServerBoard.GetLength(0); i++)
+        {
+            for (int j = 0; j < ticTacToeServerBoard.GetLength(1); j++)
+            {
+                ticTacToeServerBoard[i, j] = 0;
+            }
+        }
+    }
 
     #region Saving Player Account with StreamWriter
     private void SavePlayerAccounts()
@@ -396,6 +428,7 @@ public static class ClientToServerSignifiers
     public const int PlayerAction = 5;
     public const int SendPresetMessage = 6;
     public const int PlayerWins = 7;
+    public const int ResetGame = 8;
 }
 public static class ServerToClientSignifiers
 {
