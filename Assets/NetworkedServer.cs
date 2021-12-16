@@ -253,7 +253,6 @@ public class NetworkedServer : MonoBehaviour
                 SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + currentTurn, gs.Players[0]);
                 SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + currentTurn, gs.Players[1]);
 
-      
             }
 
     
