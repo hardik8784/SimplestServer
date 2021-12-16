@@ -1,10 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using System.IO;
-using UnityEngine.UI;
 
 public class NetworkedServer : MonoBehaviour
 {
@@ -16,13 +14,17 @@ public class NetworkedServer : MonoBehaviour
 
     LinkedList<PlayerAccount> PlayerAccounts;
 
+    const int PlayerAccountNameAndPassword = 1;
+
     string PlayerAccountFilePath;
 
     int PlayerWaitingForMatch = -1;
 
     LinkedList<GameSession> GameSessions;
 
-    int TotalTurnCount = 0;
+    //int TotalTurnCount = 0;
+
+    private int[,] ticTacToeServerBoard;
 
     // Start is called before the first frame update
     void Start()
@@ -34,7 +36,10 @@ public class NetworkedServer : MonoBehaviour
         HostTopology topology = new HostTopology(config, maxConnections);
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
 
+        ticTacToeServerBoard = new int[3, 3];
+
         PlayerAccounts = new LinkedList<PlayerAccount>();
+        
 
         GameSessions = new LinkedList<GameSession>();
 
@@ -95,7 +100,7 @@ public class NetworkedServer : MonoBehaviour
         {
             string n = csv[1];
             string p = csv[2];
-
+            bool nameInUse = false;
             bool isUnique = true;
 
             foreach (PlayerAccount pa in PlayerAccounts)
@@ -108,15 +113,18 @@ public class NetworkedServer : MonoBehaviour
             }
             if (isUnique)
             {
-                PlayerAccounts.AddLast(new PlayerAccount(n, p));
-                //SendMessageToClient(ServerToClientSignifiers.LoginResponse + "", id);
-                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
+             
+                PlayerAccount newPlayerAccount = new PlayerAccount(n, p);
+
+                PlayerAccounts.AddLast(newPlayerAccount);
+                SendMessageToClient(ServerToClientSignifiers.AccountCreationComplete + "", id);
 
                 SavePlayerAccounts();
             }
             else
             {
-                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameInUse, id);
+              
+                SendMessageToClient(ServerToClientSignifiers.AccountCreationFailed + "", id);
             }
 
         }
@@ -137,22 +145,26 @@ public class NetworkedServer : MonoBehaviour
                 {
                     if (pa.password == p)
                     {
-                        SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
+                        Debug.Log("Login Account");
+                        SendMessageToClient(ServerToClientSignifiers.LoginComplete + "," + n, id);
+            
                     }
                     else
                     {
-                        SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.IncorrectPassword, id);
+                        Debug.Log("Login Failed");
+
+                        SendMessageToClient(ServerToClientSignifiers.LoginFailed + "", id);
+                  
                     }
 
-                    //Recognised the PlayerAccounts,Here to add
-                    //SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
+                
                     hasBeenFound = true;
                     break;
                 }
             }
             if (!hasBeenFound)
             {
-                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameNotFound, id);
+                SendMessageToClient(ServerToClientSignifiers.LoginFailed + "", id);
             }
 
         }
@@ -160,62 +172,124 @@ public class NetworkedServer : MonoBehaviour
         #endregion
 
         #region If both the Clients are waiting then add them to the GameRoom/GameSession
-        else if (signifier == ClientToServerSignifiers.AddToGameSessionQueue)
+        else if (signifier == ClientToServerSignifiers.WaitingToJoinGameRoom)
         {
 
-            //If there is none, save the player into above mentioned variable
             if (PlayerWaitingForMatch == -1)
             {
-                //Make a Single Int Variable of the one and only waiting player
-                PlayerWaitingForMatch = id;
+                if (id <= 2)
+                {
+                    Debug.Log("We need to get this Player into a waiting queue");
+                    PlayerWaitingForMatch = id; 
+                }
             }
             else
             {
-                //If there is awaiting player, Join...
-                //Create a game session object, pass it to two Players
-                GameSession gs = new GameSession(PlayerWaitingForMatch, id);
-                GameSessions.AddLast(gs);
-                //pass a signifier to both the clients that they have joined one
-                SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + " ", id);
-                SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + " ", PlayerWaitingForMatch);
 
-                PlayerWaitingForMatch = -1;
-                Debug.Log("Player match done, Game Session Started");
+            
+                if (id <= 2)
+                {
+                    GameSession gs = new GameSession(PlayerWaitingForMatch, id);
+                    GameSessions.AddLast(gs);
+
+              
+                    SendMessageToClient(ServerToClientSignifiers.GameStart + "," + gs.Players[0], gs.Players[0]);
+                    SendMessageToClient(ServerToClientSignifiers.GameStart + "," + gs.Players[1], gs.Players[1]);
+
+                    
+                    SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + gs.Players[0], gs.Players[0]);
+                    SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + gs.Players[0], gs.Players[1]);
+
+             
+                    PlayerWaitingForMatch = -1; 
+                }
+
+      
             }
         }
-
         #endregion
-        else if (signifier == ClientToServerSignifiers.TicTacToePlay)
+        else if (signifier == ClientToServerSignifiers.TicTacToe)
         {
-            //Debug.Log("TicTacToePlay");
-
+        
             GameSession gs = FindGameSessionWithPlayerId(id);
+            if (gs != null)
+            {
+                if (gs.Players[0] == id)
+                {
+                    SendMessageToClient(ServerToClientSignifiers.OpponentPlay + "", gs.Players[0]); 
+                }
+                else
+                {
+                    SendMessageToClient(ServerToClientSignifiers.OpponentPlay + "", gs.Players[1]);
+                }
+            }
 
-            if (gs.Players[0] == id)
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.Players[1]);
-            }
-            else
-            {
-                SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + " ", gs.Players[0]);
-            }
-            //Debug.Log("OpponentTicTacToePlay");
+         
 
         }
         else if (signifier == ClientToServerSignifiers.PlayerAction)
         {
-            Debug.Log("Let's implement this");
-            GameSession gs = FindGameSessionWithPlayerId(id);
-            TotalTurnCount++;
-            if (gs.Players[0] == id)
+            GameSession gs = GetGameRoomWithClientID(id);
+            if (gs != null)
             {
-                Debug.Log("Player1 Clicked Id : " + gs.Players[1]);
+                int currentTurn;
+            
+                Debug.Log(ServerToClientSignifiers.OpponentPlay + "," + csv[1] + "," + csv[2] + "," + csv[3]);
 
+             
+                ticTacToeServerBoard[int.Parse(csv[1]), int.Parse(csv[2])] = int.Parse(csv[3]);
+
+                if (gs.Players[0] == id)
+                {
+                    currentTurn = gs.Players[1];
+                    SendMessageToClient(ServerToClientSignifiers.OpponentPlay + "," + csv[1] + "," + csv[2] + "," + csv[3], gs.Players[1]);
+                }
+                else
+                {
+                    currentTurn = gs.Players[0];
+                    SendMessageToClient(ServerToClientSignifiers.OpponentPlay + "," + csv[1] + "," + csv[2] + "," + csv[3], gs.Players[0]);
+                }
+               
+                SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + currentTurn, gs.Players[0]);
+                SendMessageToClient(ServerToClientSignifiers.ChangeTurn + "," + currentTurn, gs.Players[1]);
+
+      
             }
-            else
-            {
-                Debug.Log("Player2 Clicked Id : " + gs.Players[0]);
 
+    
+        }
+  
+        else if (signifier == ClientToServerSignifiers.SendPresetMessage)
+        {
+            Debug.Log("Process Message: " + ClientToServerSignifiers.SendPresetMessage + "," + csv[1]);
+            GameSession gs = GetGameRoomWithClientID(id);
+
+            if (gs != null)
+            {
+                foreach (int Player in gs.Players)
+                {
+                    SendMessageToClient(ServerToClientSignifiers.SendMessage + "," + csv[1], Player);
+                }
+             
+            }
+        }
+     
+        else if (signifier == ClientToServerSignifiers.PlayerWins)
+        {
+            GameSession gs = GetGameRoomWithClientID(id);
+            if (gs != null)
+            {
+              
+                if (gs.Players[0] == id)
+                {
+                    SendMessageToClient(ServerToClientSignifiers.NotifyOpponentWin + "," + id, gs.Players[1]);
+                }
+                else
+                {
+                    SendMessageToClient(ServerToClientSignifiers.NotifyOpponentWin + "," + id, gs.Players[0]);
+                }
+
+              
             }
         }
     }
@@ -263,6 +337,19 @@ public class NetworkedServer : MonoBehaviour
         }
         return null;
     }
+
+    private GameSession GetGameRoomWithClientID(int id)
+    {
+        foreach (GameSession gs in GameSessions)
+        {
+            if (gs.Players[0] == id || gs.Players[1] == id)
+            {
+                return gs;
+            }
+       
+        }
+        return null;
+    }
 }
 
 public class PlayerAccount
@@ -278,58 +365,49 @@ public class PlayerAccount
 
 public class GameSession
 {
-    //public int PlayerId1, PlayerId2;
     public List<int> Players;
-
-    public GameSession(int Playerid1, int Playerid2)
+   
+    public GameSession(int playerID1, int playerID2)
     {
-        //PlayerId1 = Playerid1;
-        //PlayerId2 = Playerid2;
-        Players.Add(Playerid1);
-        Players.Add(Playerid2);
+        Players = new List<int>();
+      
+        Players.Add(playerID1);
+        Players.Add(playerID2);
 
         // only need to worry about these two
         Debug.Log("Players " + Players[0] + "," + Players[1]);
+
     }
+
+    public GameSession()
+    {
+        Players = new List<int>();
+
+    }
+
+  
 }
 
 public static class ClientToServerSignifiers
 {
-    public const int Login = 1;
-
-    public const int CreateAccount = 2;
-
-    public const int AddToGameSessionQueue = 3;
-
-    public const int TicTacToePlay = 4;
-
+    public const int CreateAccount = 1;
+    public const int Login = 2;
+    public const int WaitingToJoinGameRoom = 3;
+    public const int TicTacToe = 4;
     public const int PlayerAction = 5;
-
     public const int SendPresetMessage = 6;
+    public const int PlayerWins = 7;
 }
-
 public static class ServerToClientSignifiers
 {
-    public const int LoginResponse = 1;
-
-    public const int GameSessionStarted = 2;
-
-    public const int OpponentTicTacToePlay = 3;
-
-    //public const int LoginFailure = 2;
-
-    //public const int CreateAccountSuccess = 1;
-
-    //public const int CreateAccountFailure = 2;
-}
-
-public static class LoginResponses
-{
-    public const int Success = 1;
-
-    public const int FailureNameInUse = 2;
-
-    public const int FailureNameNotFound = 3;
-
-    public const int IncorrectPassword = 4;
+    public const int LoginComplete = 1;
+    public const int LoginFailed = 2;
+    public const int AccountCreationComplete = 3;
+    public const int AccountCreationFailed = 4;
+    public const int OpponentPlay = 5; 
+    public const int GameStart = 6;
+    public const int SendMessage = 7;
+    public const int NotifyOpponentWin = 8; 
+    public const int ChangeTurn = 9;
+    public const int GameReset = 10;
 }
