@@ -313,6 +313,10 @@ public class NetworkedServer : MonoBehaviour
 
             }
         }
+        else if (signifier == ClientToServerSignifiers.SaveReplay)
+        {
+          //TODO : Save the Replay here and sent the data to client
+        }
     }
 
     private void ResetServerBoard()
@@ -397,7 +401,8 @@ public class PlayerAccount
 public class GameSession
 {
     public List<int> Players;
-   
+    public List<int> spectators;
+
     public GameSession(int playerID1, int playerID2)
     {
         Players = new List<int>();
@@ -429,6 +434,8 @@ public static class ClientToServerSignifiers
     public const int SendPresetMessage = 6;
     public const int PlayerWins = 7;
     public const int ResetGame = 8;
+    public const int SaveReplay = 9;
+    public const int RequestReplay = 10;
 }
 public static class ServerToClientSignifiers
 {
